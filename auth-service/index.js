@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { pool, initDB } = require('./db');
-
+// Auth service entry point
 const app = express();
 app.use(express.json());
 
