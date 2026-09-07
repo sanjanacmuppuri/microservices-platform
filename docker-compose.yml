@@ -1,0 +1,25 @@
+services:
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=auth-db
+      - DB_USER=authuser
+      - DB_PASS=authpass
+      - DB_NAME=authdb
+      - JWT_SECRET=supersecretkey
+    depends_on:
+      - auth-db
+
+  auth-db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=authuser
+      - POSTGRES_PASSWORD=authpass
+      - POSTGRES_DB=authdb
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+
+volumes:
+  auth_db_data:
