@@ -22,7 +22,7 @@ services:
     volumes:
       - auth_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U authuser"]
+      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
       interval: 2s
       timeout: 5s
       retries: 10
@@ -49,7 +49,34 @@ services:
     volumes:
       - products_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U productsuser"]
+      test: ["CMD-SHELL", "pg_isready -U productsuser -d productsdb"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  orders-service:
+    build: ./orders-service
+    ports:
+      - "3003:3002"
+    environment:
+      - DB_HOST=orders-db
+      - DB_USER=ordersuser
+      - DB_PASS=orderspass
+      - DB_NAME=ordersdb
+    depends_on:
+      orders-db:
+        condition: service_healthy
+
+  orders-db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=ordersuser
+      - POSTGRES_PASSWORD=orderspass
+      - POSTGRES_DB=ordersdb
+    volumes:
+      - orders_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ordersuser -d ordersdb"]
       interval: 2s
       timeout: 5s
       retries: 10
@@ -75,3 +102,4 @@ services:
 volumes:
   auth_db_data:
   products_db_data:
+  orders_db_data:
