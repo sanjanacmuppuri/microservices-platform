@@ -10,7 +10,8 @@ services:
       - DB_NAME=authdb
       - JWT_SECRET=supersecretkey
     depends_on:
-      - auth-db
+      auth-db:
+        condition: service_healthy
 
   auth-db:
     image: postgres:16-alpine
@@ -20,6 +21,38 @@ services:
       - POSTGRES_DB=authdb
     volumes:
       - auth_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authuser"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
+
+  products-service:
+    build: ./products-service
+    ports:
+      - "3002:3001"
+    environment:
+      - DB_HOST=products-db
+      - DB_USER=productsuser
+      - DB_PASS=productspass
+      - DB_NAME=productsdb
+    depends_on:
+      products-db:
+        condition: service_healthy
+
+  products-db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=productsuser
+      - POSTGRES_PASSWORD=productspass
+      - POSTGRES_DB=productsdb
+    volumes:
+      - products_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U productsuser"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
 
   prometheus:
     image: prom/prometheus:latest
@@ -41,4 +74,4 @@ services:
 
 volumes:
   auth_db_data:
-     
+  products_db_data:
